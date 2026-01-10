@@ -4,7 +4,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { calculateExpectedTotal } from '@/lib/calculator'
 
+const QUARTER_MINUTES = 12
+
 export function Calculator() {
+  const [quarter, setQuarter] = useState<number>(1)
   const [minutes, setMinutes] = useState<string>('')
   const [seconds, setSeconds] = useState<string>('')
   const [currentPoints, setCurrentPoints] = useState<string>('')
@@ -16,13 +19,20 @@ export function Calculator() {
     const secs = parseInt(seconds || '0', 10)
 
     if (isNaN(mins)) return null
-    if (mins < 0 || secs < 0 || secs > 59) return null
+    if (mins < 0 || mins > 12 || secs < 0 || secs > 59) return null
 
-    const total = mins + secs / 60
-    if (total > 48) return null
+    const timeRemaining = mins + secs / 60
+    if (timeRemaining > 12) return null
+
+    // Calculate elapsed time: completed quarters + time played in current quarter
+    const completedQuarterMinutes = (quarter - 1) * QUARTER_MINUTES
+    const currentQuarterElapsed = QUARTER_MINUTES - timeRemaining
+    const total = completedQuarterMinutes + currentQuarterElapsed
+
+    if (total <= 0 || total > 48) return null
 
     return total
-  }, [minutes, seconds])
+  }, [quarter, minutes, seconds])
 
   const result = useMemo(() => {
     const points = parseFloat(currentPoints)
@@ -36,7 +46,7 @@ export function Calculator() {
 
   const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    if (value === '' || (/^\d+$/.test(value) && parseInt(value, 10) <= 48)) {
+    if (value === '' || (/^\d+$/.test(value) && parseInt(value, 10) <= 12)) {
       setMinutes(value)
     }
   }
@@ -80,13 +90,32 @@ export function Calculator() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Time Elapsed</Label>
+            <Label>Current Quarter</Label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4].map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => setQuarter(q)}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md border transition-colors ${
+                    quarter === q
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background hover:bg-muted border-input'
+                  }`}
+                >
+                  Q{q}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Time Remaining</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="minutes"
                 type="text"
                 inputMode="numeric"
-                placeholder="0"
+                placeholder="12"
                 value={minutes}
                 onChange={handleMinutesChange}
                 onKeyDown={handleMinutesKeyDown}
@@ -105,7 +134,7 @@ export function Calculator() {
                 className="text-center"
               />
             </div>
-            <p className="text-xs text-muted-foreground">Minutes : Seconds (max 48:00)</p>
+            <p className="text-xs text-muted-foreground">Minutes : Seconds remaining in quarter</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="points">Current Combined Score</Label>
@@ -149,21 +178,17 @@ export function Calculator() {
                   <span className="font-medium">{result.remainingMinutes.toFixed(1)} min</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-muted-foreground">Calculation</span>
-                  <span className="font-mono text-xs">
-                    {currentPoints} ÷ {minutes}:{seconds || '00'} × 48
-                  </span>
+                  <span className="text-muted-foreground">Time Elapsed</span>
+                  <span className="font-medium">{minutesElapsed?.toFixed(1)} min</span>
                 </div>
               </div>
             </div>
           ) : (
             <div className="text-center text-muted-foreground py-8">
               {minutes === '' || currentPoints === '' ? (
-                'Enter game time and score to see projection'
+                'Enter time remaining and score to see projection'
               ) : minutesElapsed === null ? (
                 'Invalid time entered'
-              ) : minutesElapsed <= 0 ? (
-                'Time must be greater than 0:00'
               ) : (
                 'Enter valid numbers to calculate'
               )}
