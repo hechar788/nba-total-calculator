@@ -13,6 +13,7 @@ export function Calculator() {
   const [team1Score, setTeam1Score] = useState<string>('')
   const [team2Score, setTeam2Score] = useState<string>('')
 
+  const minutesRef = useRef<HTMLInputElement>(null)
   const secondsRef = useRef<HTMLInputElement>(null)
   const team1Ref = useRef<HTMLInputElement>(null)
   const team2Ref = useRef<HTMLInputElement>(null)
@@ -77,6 +78,9 @@ export function Calculator() {
     if (e.key === 'Enter') {
       e.preventDefault()
       team1Ref.current?.focus()
+    } else if (e.key === 'Backspace' && seconds === '') {
+      e.preventDefault()
+      minutesRef.current?.focus()
     }
   }
 
@@ -91,6 +95,9 @@ export function Calculator() {
     if (e.key === 'Enter') {
       e.preventDefault()
       team2Ref.current?.focus()
+    } else if (e.key === 'Backspace' && team1Score === '') {
+      e.preventDefault()
+      secondsRef.current?.focus()
     }
   }
 
@@ -98,6 +105,9 @@ export function Calculator() {
     if (e.key === 'Enter') {
       e.preventDefault()
       team2Ref.current?.blur()
+    } else if (e.key === 'Backspace' && team2Score === '') {
+      e.preventDefault()
+      team1Ref.current?.focus()
     }
   }
 
@@ -134,6 +144,7 @@ export function Calculator() {
             <Label>Time Remaining</Label>
             <div className="flex items-center gap-2">
               <Input
+                ref={minutesRef}
                 id="minutes"
                 type="text"
                 inputMode="numeric"
