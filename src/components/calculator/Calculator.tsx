@@ -69,7 +69,7 @@ export function Calculator() {
   const handleMinutesKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      team1Ref.current?.focus()
+      secondsRef.current?.focus()
     }
   }
 
