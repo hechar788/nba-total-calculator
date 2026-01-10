@@ -10,7 +10,8 @@ export function Calculator() {
   const [quarter, setQuarter] = useState<number>(1)
   const [minutes, setMinutes] = useState<string>('')
   const [seconds, setSeconds] = useState<string>('')
-  const [currentPoints, setCurrentPoints] = useState<string>('')
+  const [team1Score, setTeam1Score] = useState<string>('')
+  const [team2Score, setTeam2Score] = useState<string>('')
 
   const secondsRef = useRef<HTMLInputElement>(null)
 
@@ -34,14 +35,19 @@ export function Calculator() {
     return total
   }, [quarter, minutes, seconds])
 
-  const result = useMemo(() => {
-    const points = parseFloat(currentPoints)
+  const currentPoints = useMemo(() => {
+    const t1 = parseInt(team1Score, 10)
+    const t2 = parseInt(team2Score, 10)
+    if (isNaN(t1) || isNaN(t2)) return null
+    return t1 + t2
+  }, [team1Score, team2Score])
 
-    if (minutesElapsed === null || isNaN(points)) {
+  const result = useMemo(() => {
+    if (minutesElapsed === null || currentPoints === null) {
       return null
     }
 
-    return calculateExpectedTotal(minutesElapsed, points)
+    return calculateExpectedTotal(minutesElapsed, currentPoints)
   }, [minutesElapsed, currentPoints])
 
   const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,10 +78,10 @@ export function Calculator() {
     }
   }
 
-  const handlePointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleScoreChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    if (value === '' || parseFloat(value) >= 0) {
-      setCurrentPoints(value)
+    if (value === '' || /^\d+$/.test(value)) {
+      setter(value)
     }
   }
 
@@ -137,17 +143,29 @@ export function Calculator() {
             <p className="text-xs text-muted-foreground">Minutes : Seconds remaining in quarter</p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="points">Current Combined Score</Label>
-            <Input
-              id="points"
-              type="number"
-              min="0"
-              step="1"
-              placeholder="e.g., 110"
-              value={currentPoints}
-              onChange={handlePointsChange}
-            />
-            <p className="text-xs text-muted-foreground">Total points scored by both teams</p>
+            <Label>Current Score</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="team1"
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={team1Score}
+                onChange={handleScoreChange(setTeam1Score)}
+                className="text-center"
+              />
+              <span className="text-xl font-medium">-</span>
+              <Input
+                id="team2"
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={team2Score}
+                onChange={handleScoreChange(setTeam2Score)}
+                className="text-center"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">Team 1 - Team 2</p>
           </div>
         </CardContent>
       </Card>
@@ -185,8 +203,8 @@ export function Calculator() {
             </div>
           ) : (
             <div className="text-center text-muted-foreground py-8">
-              {minutes === '' || currentPoints === '' ? (
-                'Enter time remaining and score to see projection'
+              {minutes === '' || team1Score === '' || team2Score === '' ? (
+                'Enter time remaining and scores to see projection'
               ) : minutesElapsed === null ? (
                 'Invalid time entered'
               ) : (
