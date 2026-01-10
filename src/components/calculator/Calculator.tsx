@@ -14,6 +14,7 @@ export function Calculator() {
   const [team2Score, setTeam2Score] = useState<string>('')
 
   const secondsRef = useRef<HTMLInputElement>(null)
+  const team1Ref = useRef<HTMLInputElement>(null)
   const team2Ref = useRef<HTMLInputElement>(null)
 
   const minutesElapsed = useMemo(() => {
@@ -68,14 +69,14 @@ export function Calculator() {
   const handleMinutesKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      secondsRef.current?.focus()
+      team1Ref.current?.focus()
     }
   }
 
   const handleSecondsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      secondsRef.current?.blur()
+      team1Ref.current?.focus()
     }
   }
 
@@ -161,6 +162,7 @@ export function Calculator() {
             <Label>Current Score</Label>
             <div className="flex items-center gap-2">
               <Input
+                ref={team1Ref}
                 id="team1"
                 type="text"
                 inputMode="numeric"
