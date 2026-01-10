@@ -14,6 +14,7 @@ export function Calculator() {
   const [team2Score, setTeam2Score] = useState<string>('')
 
   const secondsRef = useRef<HTMLInputElement>(null)
+  const team2Ref = useRef<HTMLInputElement>(null)
 
   const minutesElapsed = useMemo(() => {
     const mins = parseInt(minutes, 10)
@@ -85,6 +86,20 @@ export function Calculator() {
     }
   }
 
+  const handleTeam1KeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      team2Ref.current?.focus()
+    }
+  }
+
+  const handleTeam2KeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      team2Ref.current?.blur()
+    }
+  }
+
   return (
     <div className="max-w-md mx-auto space-y-6">
       <Card>
@@ -152,16 +167,19 @@ export function Calculator() {
                 placeholder="0"
                 value={team1Score}
                 onChange={handleScoreChange(setTeam1Score)}
+                onKeyDown={handleTeam1KeyDown}
                 className="text-center"
               />
               <span className="text-xl font-medium">-</span>
               <Input
+                ref={team2Ref}
                 id="team2"
                 type="text"
                 inputMode="numeric"
                 placeholder="0"
                 value={team2Score}
                 onChange={handleScoreChange(setTeam2Score)}
+                onKeyDown={handleTeam2KeyDown}
                 className="text-center"
               />
             </div>
