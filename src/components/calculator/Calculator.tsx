@@ -124,6 +124,12 @@ export function Calculator() {
     if (e.key === 'Enter') {
       e.preventDefault()
       secondsRef.current?.focus()
+    } else if (e.key === 'ArrowRight') {
+      const input = e.currentTarget
+      if (input.selectionStart === input.value.length) {
+        e.preventDefault()
+        secondsRef.current?.focus()
+      }
     }
   }
 
@@ -134,6 +140,18 @@ export function Calculator() {
     } else if (e.key === 'Backspace' && seconds === '') {
       e.preventDefault()
       minutesRef.current?.focus()
+    } else if (e.key === 'ArrowLeft') {
+      const input = e.currentTarget
+      if (input.selectionStart === 0) {
+        e.preventDefault()
+        minutesRef.current?.focus()
+      }
+    } else if (e.key === 'ArrowRight') {
+      const input = e.currentTarget
+      if (input.selectionStart === input.value.length) {
+        e.preventDefault()
+        team1Ref.current?.focus()
+      }
     }
   }
 
@@ -151,6 +169,18 @@ export function Calculator() {
     } else if (e.key === 'Backspace' && team1Score === '') {
       e.preventDefault()
       secondsRef.current?.focus()
+    } else if (e.key === 'ArrowLeft') {
+      const input = e.currentTarget
+      if (input.selectionStart === 0) {
+        e.preventDefault()
+        secondsRef.current?.focus()
+      }
+    } else if (e.key === 'ArrowRight') {
+      const input = e.currentTarget
+      if (input.selectionStart === input.value.length) {
+        e.preventDefault()
+        team2Ref.current?.focus()
+      }
     }
   }
 
@@ -161,6 +191,12 @@ export function Calculator() {
     } else if (e.key === 'Backspace' && team2Score === '') {
       e.preventDefault()
       team1Ref.current?.focus()
+    } else if (e.key === 'ArrowLeft') {
+      const input = e.currentTarget
+      if (input.selectionStart === 0) {
+        e.preventDefault()
+        team1Ref.current?.focus()
+      }
     }
   }
 
