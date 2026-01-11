@@ -53,6 +53,50 @@ export function Calculator() {
     return calculateExpectedTotal(minutesElapsed, currentPoints)
   }, [minutesElapsed, currentPoints])
 
+  // Worst case scenarios: no points scored for X minutes
+  const worstCaseScenarios = useMemo(() => {
+    if (minutesElapsed === null || currentPoints === null) {
+      return null
+    }
+
+    const scenarios = [1, 2, 3].map((noScoreMinutes) => {
+      const newElapsed = minutesElapsed + noScoreMinutes
+      // If we'd exceed 48 minutes, cap at 48
+      if (newElapsed >= 48) {
+        return { minutes: noScoreMinutes, projectedTotal: currentPoints }
+      }
+      const newPace = currentPoints / newElapsed
+      const projectedTotal = Math.round(newPace * 48)
+      return { minutes: noScoreMinutes, projectedTotal }
+    })
+
+    return scenarios
+  }, [minutesElapsed, currentPoints])
+
+  // Pace change scenarios: pace changes to X pts/min for 4 minutes
+  const paceChangeScenarios = useMemo(() => {
+    if (minutesElapsed === null || currentPoints === null) {
+      return null
+    }
+
+    const scenarios = [4, 3, 2].map((newPace) => {
+      const additionalPoints = newPace * 4
+      const newPoints = currentPoints + additionalPoints
+      const newElapsed = minutesElapsed + 4
+      // If we'd exceed 48 minutes, just add remaining time at that pace
+      if (newElapsed >= 48) {
+        const remainingTime = Math.max(0, 48 - minutesElapsed)
+        const projectedTotal = currentPoints + Math.round(newPace * remainingTime)
+        return { pace: newPace, projectedTotal }
+      }
+      const projectedPace = newPoints / newElapsed
+      const projectedTotal = Math.round(projectedPace * 48)
+      return { pace: newPace, projectedTotal }
+    })
+
+    return scenarios
+  }, [minutesElapsed, currentPoints])
+
   const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     if (value === '' || (/^\d+$/.test(value) && parseInt(value, 10) <= 12)) {
@@ -245,6 +289,44 @@ export function Calculator() {
           )}
         </CardContent>
       </Card>
+
+      {worstCaseScenarios && paceChangeScenarios && (
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Worst Case</CardTitle>
+              <CardDescription className="text-xs">
+                If no points are scored
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {worstCaseScenarios.map((scenario) => (
+                <div key={scenario.minutes} className="flex justify-between items-center py-1.5 border-b last:border-0 text-sm">
+                  <span className="text-muted-foreground">Next {scenario.minutes} min</span>
+                  <span className="font-semibold">{scenario.projectedTotal}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Pace Slowdown</CardTitle>
+              <CardDescription className="text-xs">
+                For next 4 minutes
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {paceChangeScenarios.map((scenario) => (
+                <div key={scenario.pace} className="flex justify-between items-center py-1.5 border-b last:border-0 text-sm">
+                  <span className="text-muted-foreground">{scenario.pace} pts/min</span>
+                  <span className="font-semibold">{scenario.projectedTotal}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
